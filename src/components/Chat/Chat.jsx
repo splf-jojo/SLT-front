@@ -26,10 +26,8 @@ function Chat() {
             <div className="flex-1 overflow-y-auto hide-scrollbar">
                 <MessageList messages={messages} />
             </div>
-            {/* InputArea будет внизу благодаря flex-контейнеру */}
-            {/* Убираем pb-4, если не нужен отступ снизу внутри Chat */}
-            {/* Добавляем flex-shrink-0 чтобы InputArea не сжимался */}
-            <div className="flex-shrink-0">
+
+            <div className="flex-shrink-0 px-2">
                 <InputArea onSendMessage={addMessage} />
             </div>
         </div>

@@ -1,6 +1,8 @@
-import React, { useState } from "react"; // Добавляем импорт useState
+// Message.jsx
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom"; // ⬅️ добавили
 
-// Вспомогательный компонент для полоски прогресса (без изменений)
+/***************** Progress bar (без изменений) *****************/
 const ProgressBar = ({ value }) => {
     const widthPercentage = Math.min(Math.max(value * 100, 0), 100);
     return (
@@ -8,104 +10,120 @@ const ProgressBar = ({ value }) => {
             <div
                 className="bg-blue-500 h-1.5 rounded-full"
                 style={{ width: `${widthPercentage}%` }}
-            ></div>
+            />
         </div>
     );
 };
 
+/************************* Message ******************************/
 function Message({ message }) {
     const { sender, type, content } = message;
     const isUser = sender === "user";
 
-    // --- НОВОЕ: Состояние для показа всех предсказаний ---
-    const [showAllPredictions, setShowAllPredictions] = useState(false);
-    // --- Конец нового ---
+    /* ↓↓↓  режим «mobile», если URL начинается с /mobile-web-app  */
+    const { pathname } = useLocation();
+    const isMobile = pathname.startsWith("/mobile-web-app");
 
+    /* state, нужное ТОЛЬКО для десктопа (подробный список) */
+    const [showAllPredictions, setShowAllPredictions] = useState(false);
+
+    /* ---------- содержимое BACKEND‑сообщений ---------- */
     const renderBackendContent = () => {
+        /* Ошибка */
         if (type === "error") {
             return <span className="text-red-400">{content}</span>;
         }
 
+        /* Предсказания */
         if (
             type === "prediction" &&
-            content?.top_predictions &&
-            Array.isArray(content.top_predictions) &&
-            content.top_predictions.length > 0
+            Array.isArray(content?.top_predictions) &&
+            content.top_predictions.length
         ) {
-            const allPredictions = content.top_predictions;
-            const initialCount = 5; // Сколько показывать изначально
+            const predictions = content.top_predictions;
 
-            // Определяем, какие предсказания показывать сейчас
+            /* ===== MOBILE: только кнопки ===== */
+            if (isMobile) {
+                return (
+                    <div className="flex flex-wrap gap-2">
+                        {predictions.slice(0, 5).map((p) => (
+                            <button
+                                key={p.gesture}
+                                className="bg-blue-600 text-white px-4 py-2 rounded-lg active:scale-95 transition"
+                                onClick={() =>
+                                    console.log("Выбрано:", p.gesture)
+                                }
+                            >
+                                {p.gesture}
+                            </button>
+                        ))}
+                    </div>
+                );
+            }
+
+            /* ===== DESKTOP: подробный список ===== */
+            const initialCount = 5;
             const predictionsToShow = showAllPredictions
-                ? allPredictions // Если showAll true, показываем все
-                : allPredictions.slice(0, initialCount); // Иначе - только первые N
+                ? predictions
+                : predictions.slice(0, initialCount);
 
-            const canShowMore = allPredictions.length > initialCount;
+            const canShowMore = predictions.length > initialCount;
 
             return (
                 <div>
-                    {/* Заголовок убираем из списка, чтобы кнопка была ниже */}
                     <p className="font-semibold mb-2">
                         Топ-
                         {showAllPredictions
-                            ? allPredictions.length
-                            : Math.min(
-                                  initialCount,
-                                  allPredictions.length
-                              )}{" "}
+                            ? predictions.length
+                            : Math.min(initialCount, predictions.length)}{" "}
                         распознанных жестов:
                     </p>
+
                     <ul className="space-y-2">
-                        {predictionsToShow.map((prediction, index) => (
-                            // Оборачиваем li для лучшего позиционирования, если понадобится
-                            <li key={index} className="relative">
+                        {predictionsToShow.map((pr, idx) => (
+                            <li key={idx}>
                                 <div className="flex justify-between items-center text-sm">
                                     <span
                                         className={`font-medium ${
-                                            index === 0
-                                                ? "text-lg text-blue-300" // Выделяем самый вероятный
+                                            idx === 0
+                                                ? "text-lg text-blue-300"
                                                 : ""
                                         }`}
                                     >
-                                        {prediction.gesture}
+                                        {pr.gesture}
                                     </span>
                                     <span
                                         className={`text-xs ml-2 whitespace-nowrap ${
-                                            // Добавляем whitespace-nowrap
-                                            index === 0
+                                            idx === 0
                                                 ? "text-blue-300 font-semibold"
                                                 : "text-gray-400"
                                         }`}
                                     >
-                                        {(prediction.probability * 100).toFixed(
-                                            4
-                                        )}
-                                        %
+                                        {(pr.probability * 100).toFixed(4)}%
                                     </span>
                                 </div>
-                                <ProgressBar value={prediction.probability} />
+                                <ProgressBar value={pr.probability} />
                             </li>
                         ))}
                     </ul>
-                    {/* Кнопка "Показать все" / "Скрыть" */}
+
                     {canShowMore && (
                         <button
-                            onClick={() =>
-                                setShowAllPredictions(!showAllPredictions)
-                            } // Переключаем состояние
+                            onClick={() => setShowAllPredictions((v) => !v)}
                             className="text-xs text-blue-400 mt-2 hover:underline focus:outline-none"
                         >
                             {showAllPredictions
                                 ? "Скрыть"
-                                : `Показать еще ${
-                                      allPredictions.length - initialCount
+                                : `Показать ещё ${
+                                      predictions.length - initialCount
                                   }`}
                         </button>
                     )}
                 </div>
             );
         }
-        // Стандартный вывод
+
+        /* Стандартный вывод */
         return (
             <span>
                 {typeof content === "object"
@@ -115,13 +133,14 @@ function Message({ message }) {
         );
     };
 
+    /******************** JSX ********************/
     return (
         <div
             className={`flex ${isUser ? "justify-end" : "justify-start"} mb-3`}
         >
             <div
                 className={`rounded-lg max-w-[75%] md:max-w-[60%] break-words ${
-                    isUser ? " text-white" : "bg-[#303030] text-white px-4 py-2" // Добавил padding обратно, если у User его нет
+                    isUser ? "text-white" : "bg-[#303030] text-white px-4 py-2"
                 }`}
             >
                 {isUser && type === "video" ? (
