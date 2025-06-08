@@ -1,9 +1,9 @@
-import Sidebar from "./Sidebar";
-import ModelSelector from "./ModelSelector";
-import Chat from "./Chat/Chat";
+import Sidebar from "../components/Sidebar/index";
+import ModelSelector from "../components/ModelSelector";
+import Chat from "../components/Chat/Chat";
 
 /** ВЗЯТО 1‑в‑1 из вашего App.jsx */
-export default function ChatLayout() {
+export default function Desktop() {
     return (
         <div className="h-screen flex overflow-hidden bg-[#171717] text-whit">
             <Sidebar />

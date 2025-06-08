@@ -5,8 +5,8 @@ function ModelSector() {
     // Список моделей без описания
     const models = [
         { name: "MViTv2-small-16-4" },
-        { name: "Swin-large-16-3" },
-        { name: "ResNet-i3d-16-3" },
+        // { name: "Swin-large-16-3" },
+        // { name: "ResNet-i3d-16-3" },
     ];
 
     const [selected, setSelected] = useState(models[0]);
@@ -38,7 +38,7 @@ function ModelSector() {
             {/* Кнопка открытия дропдауна */}
             <button
                 className="flex items-center gap-2 px-4 py-2 bg-[#212121] hover:bg-[#171717] text-white rounded-md transition duration-200"
-                onClick={() => setIsOpen(!isOpen)}
+                // onClick={() => setIsOpen(!isOpen)}
             >
                 {selected ? selected.name : "Выбрать модель"}
                 <FaChevronDown

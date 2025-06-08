@@ -1,37 +1,35 @@
-// Chat.js
-import React, { useState } from "react";
+// src/components/Chat/Chat.jsx
+import { useContext } from "react";
 import MessageList from "./MessageList";
 import InputArea from "./InputArea";
-import "../../index.css"; // Импортируем стили, если они нужны
-// Убираем проп onShowAllPredictions, если он больше не нужен на этом уровне
-function Chat() {
-    const [messages, setMessages] = useState([]);
+import { ChatCtx } from "../../context/ChatContext";
 
-    const addMessage = (sender, type, content) => {
-        const newMessage = {
-            id: Date.now(), // Использовать более надежный ID в реальном приложении
-            sender,
-            type,
-            content,
-        };
-        setMessages((prevMessages) => [...prevMessages, newMessage]);
-    };
+export default function Chat() {
+    const { current, messages } = useContext(ChatCtx);
 
+    /* ───── placeholder, когда чат не выбран ───── */
+    if (!current) {
+        return (
+            <div className="flex items-center justify-center h-full px-6">
+                <p className="text-center text-xl text-gray-400">
+                    Выберите существующий чат
+                    <br />
+                    или&nbsp;нажмите&nbsp;«New&nbsp;chat» в&nbsp;левом меню.
+                </p>
+            </div>
+        );
+    }
+
+    /* ───── обычный вид, когда чат открыт ───── */
     return (
-        // 2. Изменения для позиционирования InputArea:
-        //    - Используем h-full, чтобы Chat занял всю высоту родительского flex-контейнера
-        //    - flex flex-col остается для вертикального расположения
-        //    - max-w-4xl mx-auto для центрирования и ограничения ширины
         <div className="flex flex-col w-full max-w-4xl mx-auto h-full">
             <div className="flex-1 overflow-y-auto hide-scrollbar">
                 <MessageList messages={messages} />
             </div>
 
             <div className="flex-shrink-0 px-2">
-                <InputArea onSendMessage={addMessage} />
+                <InputArea /> {/* Инпут рендерится только при выбранном чате */}
             </div>
         </div>
     );
 }
-
-export default Chat;
